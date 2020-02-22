@@ -42,6 +42,8 @@ entry:
 	mov ax,0x0820
 	mov es,ax
 
+	;开始读磁盘
+	MOV CL,2	;扇区
 	call rdisk
 
 
@@ -50,24 +52,23 @@ L:
 	jmp L
 
 
+
 rdisk:
-	MOV AH,0X02
-	MOV AL,1
-	MOV CH,0
-	MOV DH,0
-	MOV CL,2
-	MOV BX,0
-	MOV DL,0X80
+	MOV AH,0X02	;ah 读磁盘
+	MOV AL,1	;1个扇区
+	MOV CH,0	;柱面
+	MOV DH,0	;磁头
+	MOV BX,0	
+	MOV DL,0X80	;驱动器编号
+
 	INT 0x13
+	JNC rdiskNext
 
-	JNC rdiskRet
-
-	MOV ECX,rdiskErro	
+	MOV si,rdiskErro	
 	CALL print
 	RET
 
 rdiskErro
-	
 	DB 0X0A
 	DB "load disk error"
 	DB 0
@@ -75,17 +76,33 @@ rdiskErro
 rdiskSuccess
 	DB 0X0A
 	DB "load disk success"
+	DB 0X0A
 	DB 0
 	
 
+rdiskNext:
+	mov si,rdiskSuccess
+	call print
+	add cl,1
+	cmp cl,18
+	je rdiskRet
+	mov ax,es
+	add ax,0x20	
+	mov es,ax
+	jmp rdisk
+
+
 rdiskRet:
-	mov ecx,rdiskSuccess
+	mov si,rdiskSuccess
 	call print
 	RET
 
+
+
+
 print:
-	MOV AL,[ECX]
-	ADD ECX,1 
+	MOV AL,[si]
+	ADD si,1 
 	CMP AL,0
 	JE  printret
 	MOV AH,0X0E
@@ -93,7 +110,29 @@ print:
 	INT 0x10
 	JMP print
 printret:
+	call resetCur
 	RET
+
+
+
+
+resetCur:
+	call getCurInfo
+	mov ah,0x02
+	mov bh,0
+	mov dl,0
+	int 0x10
+	ret
+
+
+getCurInfo:
+	mov ah,0x03
+	mov bh,0
+	int 0x10
+	ret
+
+
+
 msg:
 	DB 0X0A
 	DB 0X0A
