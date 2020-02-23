@@ -43,8 +43,9 @@ entry:
 	mov es,ax
 
 	;开始读磁盘
-	MOV CL,2	;扇区
+	mov cl,2	;扇区
 	call rdisk
+
 
 
 L:
@@ -53,82 +54,171 @@ L:
 
 
 
+
+
+printHex:
+;eg 0xff
+;in ax reg 0000000011111111
+;ah 00000000
+;al 11111111
+	push bp
+	mov bp,sp
+	
+	push ax
+	push bx
+	push cx
+	push dx
+	push si
+	
+	mov si,0
+	mov cx , [bp+4]
+	
+	mov dh,0xf0
+	
+.loop:
+	add si,1
+		
+	mov al,ch
+	and al,dh
+	shr al,4
+	
+	add al,0x90	;Magic numbers
+	daa		
+			;math amazing!!!
+
+	adc al,0x40
+
+	daa
+	
+	
+	mov ah,0x0e
+	mov bl,15
+	int 0x10
+	rol cx,4
+
+	cmp si,4
+	jne .loop
+	
+	pop si
+	pop dx
+	pop cx
+	pop bx
+	pop ax
+	
+	pop bp
+	ret
+
+
 rdisk:
-	MOV AH,0X02	;ah 读磁盘
-	MOV AL,1	;1个扇区
-	MOV CH,0	;柱面
-	MOV DH,0	;磁头
-	MOV BX,0	
-	MOV DL,0X80	;驱动器编号
+	push ax
+	push bx
+	push cx
+	push dx
+	push si
 
-	INT 0x13
-	JNC rdiskNext
+	mov AH,0X02	;ah 读磁盘
+	mov AL,1	;1个扇区
+	mov CH,0	;柱面
+	mov DH,0	;磁头
+	mov BX,0	
+	mov DL,0X80	;驱动器编号
 
-	MOV si,rdiskErro	
-	CALL print
-	RET
+	int 0x13
+	jnc .rdiskNext
 
-rdiskErro
+	mov si,.rdiskErro	
+	call print
+	ret	
+
+.rdiskErro
 	DB 0X0A
 	DB "load disk error"
 	DB 0
 
-rdiskSuccess
-	DB 0X0A
-	DB "load disk success"
+.rdiskSuccess
+	DB " sector load success"
 	DB 0X0A
 	DB 0
 	
 
-rdiskNext:
-	mov si,rdiskSuccess
+.rdiskNext:
+	push cx
+	call printHex
+	pop cx
+	mov si,.rdiskSuccess
 	call print
 	add cl,1
 	cmp cl,18
-	je rdiskRet
+	jeb .rdiskRet
 	mov ax,es
 	add ax,0x20	
 	mov es,ax
 	jmp rdisk
 
 
-rdiskRet:
-	mov si,rdiskSuccess
-	call print
+.rdiskRet:
+	pop si
+	pop dx
+	pop cx
+	pop bx
+	pop ax	
+
+
 	RET
 
 
 
 
 print:
-	MOV AL,[si]
-	ADD si,1 
-	CMP AL,0
-	JE  printret
-	MOV AH,0X0E
-	MOV BL,15
+	push bp
+	mov bp,sp
+	push ax
+	push bx
+	push cx
+	push dx
+	push si
+
+.loop
+	mov al,[si]
+	add si,1 
+	cmp al,0
+	JE  .printret
+	mov ah,0X0E
+	mov bl,15
 	INT 0x10
-	JMP print
-printret:
+	JMP .loop
+.printret:
 	call resetCur
-	RET
+	
+	pop si
+	pop dx
+	pop cx
+	pop bx
+	pop ax
+	pop bp
+
+	ret	
 
 
 
 
 resetCur:
+	
 	call getCurInfo
 	mov ah,0x02
 	mov bh,0
 	mov dl,0
 	int 0x10
+	
 	ret
 
 
 getCurInfo:
+
 	mov ah,0x03
 	mov bh,0
 	int 0x10
+	
 	ret
 
 
