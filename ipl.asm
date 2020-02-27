@@ -154,7 +154,7 @@ rdisk:
 	call print
 	add cl,1
 	cmp cl,18
-	jb .rdiskRet
+	jnb .rdiskRet
 	mov ax,es
 	add ax,0x20	
 	mov es,ax
