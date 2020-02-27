@@ -2,39 +2,39 @@
 
 
 
-ORG 0x7c00
+ORG 0x7c5a
 JMP entry
 NOP
 
-	    DB "MSDOS5.0"	;OEM
-	    DW 0x200		;Bytes_per_sector
-	    DB 8		;Sectors_per_cluster
-	    DW 0x8F8		;Reserved_sectors (2 - 2296可以使用)
-	    DB 2		;Number_of_FATs
-	    DW 0		;Root_entries
-	    DW 0		;Sectors_small
-	    DB 0XF8		;Media_descriptor
-	    DW 0		;Number_of_FATs16
-	    DW 0x003F		;Sectors per track 
-	    DW 255		;Heads
-	    DD 0		;Hidden sectors
-	    DD 0xEE8C00         ;Sectors total 32
-	    
-	    ;FAT32 SECTION
-	    DD 0x00003B84       ;Number of fat32
-	    DW 0                ;mirror flag
-	    DW 0                ;version
-	    DD 2                ;offclus_root
-	    DW 1                ;fsinfo
-	    DW 6                ;mbr backup
-	    RESB 12             ;fat32 reserverd
-	    DB 0x80             ;usb flag
-	    DB 0                ;fat16 reserverd
-	    DB 0x29             ;boot_sign
-	    DD 0x08F85C97       ;Volume id
-	    DB "NO NAME    "    ;Volume label
-	    DB "FAT32   "       ;File system
-
+;    DB "MSDOS5.0"	;OEM
+;    DW 0x200		;Bytes_per_sector
+;    DB 8		;Sectors_per_cluster
+;    DW 0x8F8		;Reserved_sectors (2 - 2296可以使用)
+;    DB 2		;Number_of_FATs
+;    DW 0		;Root_entries
+;    DW 0		;Sectors_small
+;    DB 0XF8		;Media_descriptor
+;    DW 0		;Number_of_FATs16
+;    DW 0x003F		;Sectors per track 
+;    DW 255		;Heads
+;    DD 0		;Hidden sectors
+;    DD 0xEE8C00         ;Sectors total 32
+;    
+;    ;FAT32 SECTION
+;    DD 0x00003B84       ;Number of fat32
+;    DW 0                ;mirror flag
+;    DW 0                ;version
+;    DD 2                ;offclus_root
+;    DW 1                ;fsinfo
+;    DW 6                ;mbr backup
+;    RESB 12             ;fat32 reserverd
+;    DB 0x80             ;usb flag
+;    DB 0                ;fat16 reserverd
+;    DB 0x29             ;boot_sign
+;    DD 0x08F85C97       ;Volume id
+;    DB "NO NAME    "    ;Volume label
+;    DB "FAT32   "       ;File system
+;
 
 entry:
 	mov ax,0
@@ -235,9 +235,9 @@ msg:
 	DB 0 
 
 
-	RESB 0X1FE-($-$$)
+	RESB 0X1FE-0x5a-($-$$)
 	DB 0X55,0XAA
 
-	RESB 0x7dfe-($-$$)
+;	RESB 0x7dfe-($-$$)
 
 	
