@@ -48,15 +48,19 @@ entry:
 	mov es,ax
 
 	;开始读磁盘
-	mov cl,2	;扇区
-	call rdisk
+;	call rdisk
 
+	mov ax,0x3030
+	mov [0x08200],ax
+	call wdisk
+	
+	mov ax,[0x08200]
+	push ax
+	call printHex
 
-
-L:
-	HLT
-	jmp L
-
+LOOP:
+	hit
+	jmp LOOP
 
 
 
@@ -121,16 +125,21 @@ rdisk:
 	push dx
 	push si
 
+
+	mov cl,30	;扇区
+	mov ch,0 	;柱面
+	mov DH,8	;磁头
+.loop
 	mov AH,0X02	;ah 读磁盘
 	mov AL,1	;1个扇区
-	mov CH,0	;柱面
-	mov DH,0	;磁头
-	mov BX,0	
 	mov DL,0X80	;驱动器编号
+	mov bx,0
 
 	int 0x13
-	jnc .rdiskNext
+	jnc .rdiskNextSector
 
+	push ax
+	call printHex
 	mov si,.rdiskErro	
 	call print
 	ret	
@@ -146,20 +155,30 @@ rdisk:
 	DB 0
 	
 
-.rdiskNext:
+.rdiskNextSector:
 	push cx
 	call printHex
 	pop cx
 	mov si,.rdiskSuccess
 	call print
 	add cl,1
-	cmp cl,18
-	jnb .rdiskRet
+	cmp cl,33
+	jnb .rdiskNextCylinder
 	mov ax,es
 	add ax,0x20	
 	mov es,ax
-	jmp rdisk
+	jmp .loop
 
+.rdiskNextCylinder
+	mov cl,1
+	add ch,1
+	cmp ch,0
+	jnb .rdiskRet
+	mov ax,es
+	add ax,0x20
+	mov es,ax
+	jmp .loop
+	
 
 .rdiskRet:
 	pop si
@@ -203,6 +222,36 @@ print:
 	pop bp
 
 	ret	
+
+wdisk:
+	push ax
+	push bx
+	push cx
+	push dx
+	
+	mov ah,0x03
+	mov al,1
+	mov ch,0
+	mov cl,1
+	mov dh,1
+	mov bx,0
+	int 0x13
+	jnc .ret 
+	mov si,.wdiskErro
+	call print
+	
+.ret	
+	pop dx
+	pop cx
+	pop bx
+	pop ax
+
+	ret
+
+.wdiskErro
+	DB 0X0A
+	DB "load disk error"
+	DB 0
 
 
 
