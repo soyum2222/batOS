@@ -232,8 +232,8 @@ wdisk:
 	mov ah,0x03
 	mov al,1
 	mov ch,0
-	mov cl,1
-	mov dh,1
+	mov cl,34
+	mov dh,4
 	mov bx,0
 	int 0x13
 	jnc .ret 
