@@ -48,15 +48,16 @@ entry:
 	mov es,ax
 
 	;开始读磁盘
-;	call rdisk
+	call rdisk
 
-	mov ax,0x3030
-	mov [0x08200],ax
-	call wdisk
-	
-	mov ax,[0x08200]
-	push ax
-	call printHex
+;	mov ax,0x3030
+;	mov [0x08200],ax
+;	call wdisk
+;	
+;	mov ax,[0x08200]
+;	push ax
+;	call printHex
+	jmp 0x08200
 
 LOOP:
 	hit
@@ -126,9 +127,9 @@ rdisk:
 	push si
 
 
-	mov cl,30	;扇区
+	mov cl,34	;扇区
 	mov ch,0 	;柱面
-	mov DH,8	;磁头
+	mov DH,4	;磁头
 .loop
 	mov AH,0X02	;ah 读磁盘
 	mov AL,1	;1个扇区
@@ -229,12 +230,20 @@ wdisk:
 	push cx
 	push dx
 	
+;	mov ah,0x03
+;	mov al,1
+;	mov ch,0
+;	mov cl,34
+;	mov dh,4
+;	mov bx,0
+
 	mov ah,0x03
 	mov al,1
-	mov ch,0
-	mov cl,34
-	mov dh,4
+	mov ch,1
+	mov cl,1
+	mov dh,0
 	mov bx,0
+
 	int 0x13
 	jnc .ret 
 	mov si,.wdiskErro
